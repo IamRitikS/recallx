@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Calvin Cycle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../styles.css">
+
+  <style>
+    body {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .score {
+      text-align: center;
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button.active {
+      background-color: #a5d6a7;
+    }
+
+    .diagram {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .diagram img {
+      max-width: 100%;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+    }
+
+    .blanks {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .blank-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    .blank-label {
+      flex: 1;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .blank-row input {
+      width: 160px;
+      padding: 6px 10px;
+      font-size: 14px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      font-family: Arial, sans-serif;
+    }
+
+    .blank-row.correct {
+      background-color: #c8e6c9;
+      border-color: #81c784;
+    }
+
+    .blank-row.wrong {
+      background-color: #ffcdd2;
+      border-color: #e57373;
+    }
+
+    .blank-row.correct input,
+    .blank-row.wrong input {
+      border-color: transparent;
+      background: transparent;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Calvin Cycle</h1>
+<div class="score" id="score">0 / 8 correct</div>
+
+<div class="controls">
+  <button id="hintsBtn" onclick="toggleHints()">Hints: OFF</button>
+  <button onclick="checkAll()">Check</button>
+  <button onclick="resetAll()">Reset</button>
+  <button onclick="revealAll()">Reveal All</button>
+  <button onclick="window.location.href='index.html'">Back</button>
+</div>
+
+<div class="diagram">
+  <img src="assets/calvin-cycle.png" alt="Calvin Cycle diagram">
+</div>
+
+<div class="blanks" id="blanks"></div>
+
+<script>
+const blanks = [
+  {
+    label:   '① Molecule entering the cycle (top box)',
+    display: 'CO₂',
+    ans:     ['co2', 'co₂', '6co2', '6 co2', '6co₂', '6 co₂'],
+  },
+  {
+    label:   '② CO₂ acceptor molecule (top-left box)',
+    display: 'RuBP',
+    ans:     ['rubp', '6 rubp', '6rubp', 'ribulose bisphosphate', 'ribulose-1,5-bisphosphate'],
+  },
+  {
+    label:   '③ Stage 1 — name',
+    display: 'Carbon Fixation',
+    ans:     ['carbon fixation'],
+  },
+  {
+    label:   '④ 3-carbon compound after Stage 1 (right circle)',
+    display: '3-PGA',
+    ans:     ['3-pga', '3pga', '12 3-pga', '3-phosphoglycerate'],
+  },
+  {
+    label:   '⑤ Stage 2 — name',
+    display: 'Reduction',
+    ans:     ['reduction'],
+  },
+  {
+    label:   '⑥ 3-carbon sugar after Stage 2 (left circle)',
+    display: 'G3P',
+    ans:     ['g3p', 'glyceraldehyde 3-phosphate', 'glyceraldehyde-3-phosphate', 'glyceraldehyde3phosphate'],
+  },
+  {
+    label:   '⑦ Stage 3 — name',
+    display: 'Regeneration of RuBP',
+    ans:     ['regeneration', 'regeneration of rubp', 'rubp regeneration'],
+  },
+  {
+    label:   '⑧ Output molecule (bottom box)',
+    display: 'G3P',
+    ans:     ['g3p', 'glyceraldehyde 3-phosphate', 'glyceraldehyde-3-phosphate'],
+  },
+];
+
+let hintsEnabled = false;
+const total = blanks.length;
+const scoreEl = document.getElementById('score');
+const container = document.getElementById('blanks');
+
+blanks.forEach((blank, i) => {
+  const row = document.createElement('div');
+  row.className = 'blank-row';
+
+  const label = document.createElement('span');
+  label.className = 'blank-label';
+  label.textContent = blank.label;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+
+  input.addEventListener('input', function () {
+    if (!hintsEnabled) return;
+    applyState(row, input, blank);
+    updateScore();
+  });
+
+  row.appendChild(label);
+  row.appendChild(input);
+  container.appendChild(row);
+});
+
+function isCorrect(input, blank) {
+  return blank.ans.includes(input.value.trim().toLowerCase());
+}
+
+function applyState(row, input, blank) {
+  const val = input.value.trim();
+  if (val === '') {
+    row.className = 'blank-row';
+  } else if (blank.ans.includes(val.toLowerCase())) {
+    row.className = 'blank-row correct';
+  } else {
+    row.className = 'blank-row wrong';
+  }
+}
+
+function updateScore() {
+  const inputs = container.querySelectorAll('input');
+  let correct = 0;
+  inputs.forEach((input, i) => {
+    if (isCorrect(input, blanks[i])) correct++;
+  });
+  scoreEl.textContent = correct + ' / ' + total + ' correct';
+}
+
+function toggleHints() {
+  hintsEnabled = !hintsEnabled;
+  const btn = document.getElementById('hintsBtn');
+  btn.textContent = 'Hints: ' + (hintsEnabled ? 'ON' : 'OFF');
+  btn.classList.toggle('active', hintsEnabled);
+
+  container.querySelectorAll('.blank-row').forEach((row, i) => {
+    const input = row.querySelector('input');
+    if (!hintsEnabled) {
+      row.className = 'blank-row';
+    } else {
+      applyState(row, input, blanks[i]);
+    }
+  });
+  updateScore();
+}
+
+function checkAll() {
+  container.querySelectorAll('.blank-row').forEach((row, i) => {
+    applyState(row, row.querySelector('input'), blanks[i]);
+  });
+  updateScore();
+}
+
+function resetAll() {
+  container.querySelectorAll('.blank-row').forEach(row => {
+    row.querySelector('input').value = '';
+    row.className = 'blank-row';
+  });
+  scoreEl.textContent = '0 / ' + total + ' correct';
+}
+
+function revealAll() {
+  container.querySelectorAll('.blank-row').forEach((row, i) => {
+    row.querySelector('input').value = blanks[i].display;
+    row.className = 'blank-row correct';
+  });
+  scoreEl.textContent = total + ' / ' + total + ' correct';
+}
+</script>
+
+</body>
+</html>
