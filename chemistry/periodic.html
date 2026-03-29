@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Periodic Table Trainer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #fafafa;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      margin-bottom: 6px;
+    }
+
+    .score {
+      text-align: center;
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 14px;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      padding: 10px 18px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: none;
+      background-color: #ddd;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(18, 52px);
+      grid-template-rows: repeat(7, 55px) 18px 55px 55px;
+      gap: 3px;
+      width: max-content;
+      margin: auto;
+    }
+
+    .cell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
+      position: relative;
+      box-sizing: border-box;
+    }
+
+    .cell .num {
+      font-size: 9px;
+      color: #999;
+      position: absolute;
+      top: 2px;
+      left: 4px;
+      line-height: 1;
+    }
+
+    .cell input {
+      width: 40px;
+      text-align: center;
+      border: none;
+      background: transparent;
+      font-size: 14px;
+      font-weight: bold;
+      outline: none;
+      padding: 0;
+      margin-top: 10px;
+      color: #222;
+    }
+
+    .cell.correct {
+      background-color: #c8e6c9;
+      border-color: #81c784;
+    }
+
+    .cell.wrong {
+      background-color: #ffcdd2;
+      border-color: #e57373;
+    }
+
+    .cell.placeholder {
+      background: #eeeeee;
+      border-color: #ccc;
+      font-size: 10px;
+      color: #888;
+      text-align: center;
+      cursor: default;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Periodic Table Trainer</h1>
+<div class="score" id="score">0 / 118 correct</div>
+
+<div class="controls">
+  <button onclick="resetAll()">Reset</button>
+  <button onclick="revealAll()">Reveal All</button>
+  <button onclick="window.location.href='index.html'">Back</button>
+</div>
+
+<div class="table-wrapper">
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const elements = [
+  // Period 1
+  {num:1,   sym:'H',  row:1, col:1},
+  {num:2,   sym:'He', row:1, col:18},
+  // Period 2
+  {num:3,   sym:'Li', row:2, col:1},
+  {num:4,   sym:'Be', row:2, col:2},
+  {num:5,   sym:'B',  row:2, col:13},
+  {num:6,   sym:'C',  row:2, col:14},
+  {num:7,   sym:'N',  row:2, col:15},
+  {num:8,   sym:'O',  row:2, col:16},
+  {num:9,   sym:'F',  row:2, col:17},
+  {num:10,  sym:'Ne', row:2, col:18},
+  // Period 3
+  {num:11,  sym:'Na', row:3, col:1},
+  {num:12,  sym:'Mg', row:3, col:2},
+  {num:13,  sym:'Al', row:3, col:13},
+  {num:14,  sym:'Si', row:3, col:14},
+  {num:15,  sym:'P',  row:3, col:15},
+  {num:16,  sym:'S',  row:3, col:16},
+  {num:17,  sym:'Cl', row:3, col:17},
+  {num:18,  sym:'Ar', row:3, col:18},
+  // Period 4
+  {num:19,  sym:'K',  row:4, col:1},
+  {num:20,  sym:'Ca', row:4, col:2},
+  {num:21,  sym:'Sc', row:4, col:3},
+  {num:22,  sym:'Ti', row:4, col:4},
+  {num:23,  sym:'V',  row:4, col:5},
+  {num:24,  sym:'Cr', row:4, col:6},
+  {num:25,  sym:'Mn', row:4, col:7},
+  {num:26,  sym:'Fe', row:4, col:8},
+  {num:27,  sym:'Co', row:4, col:9},
+  {num:28,  sym:'Ni', row:4, col:10},
+  {num:29,  sym:'Cu', row:4, col:11},
+  {num:30,  sym:'Zn', row:4, col:12},
+  {num:31,  sym:'Ga', row:4, col:13},
+  {num:32,  sym:'Ge', row:4, col:14},
+  {num:33,  sym:'As', row:4, col:15},
+  {num:34,  sym:'Se', row:4, col:16},
+  {num:35,  sym:'Br', row:4, col:17},
+  {num:36,  sym:'Kr', row:4, col:18},
+  // Period 5
+  {num:37,  sym:'Rb', row:5, col:1},
+  {num:38,  sym:'Sr', row:5, col:2},
+  {num:39,  sym:'Y',  row:5, col:3},
+  {num:40,  sym:'Zr', row:5, col:4},
+  {num:41,  sym:'Nb', row:5, col:5},
+  {num:42,  sym:'Mo', row:5, col:6},
+  {num:43,  sym:'Tc', row:5, col:7},
+  {num:44,  sym:'Ru', row:5, col:8},
+  {num:45,  sym:'Rh', row:5, col:9},
+  {num:46,  sym:'Pd', row:5, col:10},
+  {num:47,  sym:'Ag', row:5, col:11},
+  {num:48,  sym:'Cd', row:5, col:12},
+  {num:49,  sym:'In', row:5, col:13},
+  {num:50,  sym:'Sn', row:5, col:14},
+  {num:51,  sym:'Sb', row:5, col:15},
+  {num:52,  sym:'Te', row:5, col:16},
+  {num:53,  sym:'I',  row:5, col:17},
+  {num:54,  sym:'Xe', row:5, col:18},
+  // Period 6
+  {num:55,  sym:'Cs', row:6, col:1},
+  {num:56,  sym:'Ba', row:6, col:2},
+  {num:72,  sym:'Hf', row:6, col:4},
+  {num:73,  sym:'Ta', row:6, col:5},
+  {num:74,  sym:'W',  row:6, col:6},
+  {num:75,  sym:'Re', row:6, col:7},
+  {num:76,  sym:'Os', row:6, col:8},
+  {num:77,  sym:'Ir', row:6, col:9},
+  {num:78,  sym:'Pt', row:6, col:10},
+  {num:79,  sym:'Au', row:6, col:11},
+  {num:80,  sym:'Hg', row:6, col:12},
+  {num:81,  sym:'Tl', row:6, col:13},
+  {num:82,  sym:'Pb', row:6, col:14},
+  {num:83,  sym:'Bi', row:6, col:15},
+  {num:84,  sym:'Po', row:6, col:16},
+  {num:85,  sym:'At', row:6, col:17},
+  {num:86,  sym:'Rn', row:6, col:18},
+  // Period 7
+  {num:87,  sym:'Fr', row:7, col:1},
+  {num:88,  sym:'Ra', row:7, col:2},
+  {num:104, sym:'Rf', row:7, col:4},
+  {num:105, sym:'Db', row:7, col:5},
+  {num:106, sym:'Sg', row:7, col:6},
+  {num:107, sym:'Bh', row:7, col:7},
+  {num:108, sym:'Hs', row:7, col:8},
+  {num:109, sym:'Mt', row:7, col:9},
+  {num:110, sym:'Ds', row:7, col:10},
+  {num:111, sym:'Rg', row:7, col:11},
+  {num:112, sym:'Cn', row:7, col:12},
+  {num:113, sym:'Nh', row:7, col:13},
+  {num:114, sym:'Fl', row:7, col:14},
+  {num:115, sym:'Mc', row:7, col:15},
+  {num:116, sym:'Lv', row:7, col:16},
+  {num:117, sym:'Ts', row:7, col:17},
+  {num:118, sym:'Og', row:7, col:18},
+  // Lanthanides (grid row 9)
+  {num:57,  sym:'La', row:9, col:3},
+  {num:58,  sym:'Ce', row:9, col:4},
+  {num:59,  sym:'Pr', row:9, col:5},
+  {num:60,  sym:'Nd', row:9, col:6},
+  {num:61,  sym:'Pm', row:9, col:7},
+  {num:62,  sym:'Sm', row:9, col:8},
+  {num:63,  sym:'Eu', row:9, col:9},
+  {num:64,  sym:'Gd', row:9, col:10},
+  {num:65,  sym:'Tb', row:9, col:11},
+  {num:66,  sym:'Dy', row:9, col:12},
+  {num:67,  sym:'Ho', row:9, col:13},
+  {num:68,  sym:'Er', row:9, col:14},
+  {num:69,  sym:'Tm', row:9, col:15},
+  {num:70,  sym:'Yb', row:9, col:16},
+  {num:71,  sym:'Lu', row:9, col:17},
+  // Actinides (grid row 10)
+  {num:89,  sym:'Ac', row:10, col:3},
+  {num:90,  sym:'Th', row:10, col:4},
+  {num:91,  sym:'Pa', row:10, col:5},
+  {num:92,  sym:'U',  row:10, col:6},
+  {num:93,  sym:'Np', row:10, col:7},
+  {num:94,  sym:'Pu', row:10, col:8},
+  {num:95,  sym:'Am', row:10, col:9},
+  {num:96,  sym:'Cm', row:10, col:10},
+  {num:97,  sym:'Bk', row:10, col:11},
+  {num:98,  sym:'Cf', row:10, col:12},
+  {num:99,  sym:'Es', row:10, col:13},
+  {num:100, sym:'Fm', row:10, col:14},
+  {num:101, sym:'Md', row:10, col:15},
+  {num:102, sym:'No', row:10, col:16},
+  {num:103, sym:'Lr', row:10, col:17},
+];
+
+const grid = document.getElementById('grid');
+const scoreEl = document.getElementById('score');
+
+// Placeholder cells for lanthanide/actinide series in main table
+const lanthP = document.createElement('div');
+lanthP.className = 'cell placeholder';
+lanthP.style.gridRow = '6';
+lanthP.style.gridColumn = '3';
+lanthP.textContent = '57–71';
+grid.appendChild(lanthP);
+
+const actP = document.createElement('div');
+actP.className = 'cell placeholder';
+actP.style.gridRow = '7';
+actP.style.gridColumn = '3';
+actP.textContent = '89–103';
+grid.appendChild(actP);
+
+// Build all element cells
+elements.forEach(el => {
+  const cell = document.createElement('div');
+  cell.className = 'cell';
+  cell.style.gridRow = el.row;
+  cell.style.gridColumn = el.col;
+
+  const numSpan = document.createElement('span');
+  numSpan.className = 'num';
+  numSpan.textContent = el.num;
+
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.maxLength = 3;
+  input.setAttribute('data-sym', el.sym);
+
+  input.addEventListener('input', function () {
+    const val = this.value.trim();
+    if (val === '') {
+      cell.className = 'cell';
+    } else if (val.toLowerCase() === el.sym.toLowerCase()) {
+      cell.className = 'cell correct';
+    } else {
+      cell.className = 'cell wrong';
+    }
+    updateScore();
+  });
+
+  cell.appendChild(numSpan);
+  cell.appendChild(input);
+  grid.appendChild(cell);
+});
+
+function updateScore() {
+  const correct = document.querySelectorAll('.cell.correct').length;
+  scoreEl.textContent = correct + ' / 118 correct';
+}
+
+function resetAll() {
+  document.querySelectorAll('.cell input').forEach(input => {
+    input.value = '';
+    input.closest('.cell').className = 'cell';
+  });
+  updateScore();
+}
+
+function revealAll() {
+  document.querySelectorAll('.cell input').forEach(input => {
+    input.value = input.getAttribute('data-sym');
+    input.closest('.cell').className = 'cell correct';
+  });
+  updateScore();
+}
+</script>
+
+</body>
+</html>

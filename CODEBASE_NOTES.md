@@ -39,7 +39,19 @@ RecallX/
 - Same `goTo()` navigation pattern as root
 
 ### `chemistry/periodic.html` — Periodic Table Trainer
-- **Currently completely empty** — the main feature to build next
+- Full CSS grid layout (18 cols × 10 rows)
+- All 118 elements as input cells with atomic number shown (small, top-left)
+- Rows 1–7: main table; row 8: 18px spacer; row 9: lanthanides (La–Lu, cols 3–17); row 10: actinides (Ac–Lr, cols 3–17)
+- Placeholder cells at period 6 col 3 (`57–71`) and period 7 col 3 (`89–103`)
+- Real-time validation on `input` event — case-insensitive symbol match
+  - Correct → green (`#c8e6c9`)
+  - Wrong (non-empty) → red (`#ffcdd2`)
+  - Empty → white (default)
+- Score counter: `X / 118 correct` updates live
+- **Reset** button: clears all inputs and score
+- **Reveal All** button: fills every cell with the correct symbol
+- **Back** button → `index.html`
+- Mobile: horizontal scroll via `overflow-x: auto` on `.table-wrapper`
 
 ### `physics/index.html` and `biology/index.html`
 - Identical structure — both show `<h1>` + `<p>Coming Soon...</p>` + Back button
@@ -66,7 +78,7 @@ RecallX/
 |---|---|
 | Subject home screen | ✅ Done |
 | Chemistry topic menu | ✅ Done |
-| Periodic Table Trainer | ⬜ Empty file — **to be built** |
+| Periodic Table Trainer | ✅ Done |
 | Physics content | ⬜ Coming Soon placeholder |
 | Biology content | ⬜ Coming Soon placeholder |
 
@@ -74,5 +86,5 @@ RecallX/
 
 ## Key Observations / Known Issues
 - No shared stylesheet — each page duplicates the same `body`, `button`, and media query CSS
-- `periodic.html` is the **next active development target**
-- No server needed — the whole project works opened directly from the filesystem
+- `periodic.html` is **complete** — all 118 elements, real-time green/red validation, score counter, Reset + Reveal All
+- No server should ever be needed — the whole project works opened directly from the filesystem
