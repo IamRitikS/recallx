@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>RecallX</title>
+
+  <!-- Mobile responsiveness -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      text-align: center;
+      background-color: #fafafa;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 40px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .subject {
+      padding: 15px;
+      font-size: 20px;
+      border-radius: 10px;
+      background-color: #e3f2fd;
+      cursor: pointer;
+      transition: 0.2s;
+      user-select: none;
+    }
+
+    .subject:active {
+      transform: scale(0.97);
+      background-color: #bbdefb;
+    }
+
+    @media (min-width: 600px) {
+      h1 {
+        font-size: 44px;
+      }
+
+      .subject {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>RecallX</h1>
+
+<div class="container">
+  <div class="subject" onclick="goTo('physics/index.html')">Physics</div>
+  <div class="subject" onclick="goTo('chemistry/index.html')">Chemistry</div>
+  <div class="subject" onclick="goTo('biology/index.html')">Biology</div>
+</div>
+
+<script>
+function goTo(page) {
+  window.location.href = page;
+}
+</script>
+
+</body>
+</html>

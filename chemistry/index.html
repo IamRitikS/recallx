@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chemistry</title>
+
+  <!-- Makes it responsive on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 32px;
+      margin-bottom: 40px;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      max-width: 400px;
+      margin: auto;
+    }
+
+    .item {
+      font-size: 20px;
+      padding: 15px;
+      border-radius: 10px;
+      background-color: #e6f4ea;
+      cursor: pointer;
+      transition: 0.2s;
+      user-select: none;
+    }
+
+    .item:active {
+      transform: scale(0.97);
+      background-color: #c8e6c9;
+    }
+
+    button {
+      margin-top: 30px;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      background-color: #ddd;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    /* Larger screens */
+    @media (min-width: 600px) {
+      h1 {
+        font-size: 40px;
+      }
+
+      .item {
+        font-size: 22px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Chemistry</h1>
+
+<div class="container">
+  <div class="item" onclick="goTo('./periodic.html')">
+    Periodic Table Trainer
+  </div>
+</div>
+
+<button onclick="goTo('../index.html')">Back</button>
+
+<script>
+function goTo(page) {
+  window.location.href = page;
+}
+</script>
+
+</body>
+</html>
