@@ -45,6 +45,10 @@
       transform: scale(0.97);
     }
 
+    button.active {
+      background-color: #a5d6a7;
+    }
+
     .table-wrapper {
       overflow-x: auto;
     }
@@ -121,6 +125,8 @@
 <div class="score" id="score">0 / 118 correct</div>
 
 <div class="controls">
+  <button id="hintsBtn" onclick="toggleHints()">Hints: OFF</button>
+  <button onclick="checkAll()">Check</button>
   <button onclick="resetAll()">Reset</button>
   <button onclick="revealAll()">Reveal All</button>
   <button onclick="window.location.href='index.html'">Back</button>
@@ -296,6 +302,7 @@ elements.forEach(el => {
   input.setAttribute('data-sym', el.sym);
 
   input.addEventListener('input', function () {
+    if (!hintsEnabled) return;
     const val = this.value.trim();
     if (val === '') {
       cell.className = 'cell';
@@ -311,6 +318,47 @@ elements.forEach(el => {
   cell.appendChild(input);
   grid.appendChild(cell);
 });
+
+let hintsEnabled = false;
+
+function toggleHints() {
+  hintsEnabled = !hintsEnabled;
+  const btn = document.getElementById('hintsBtn');
+  btn.textContent = 'Hints: ' + (hintsEnabled ? 'ON' : 'OFF');
+  btn.classList.toggle('active', hintsEnabled);
+
+  document.querySelectorAll('.cell input').forEach(input => {
+    const val = input.value.trim();
+    const cell = input.closest('.cell');
+    if (!hintsEnabled) {
+      cell.className = 'cell';
+    } else {
+      if (val === '') {
+        cell.className = 'cell';
+      } else if (val.toLowerCase() === input.getAttribute('data-sym').toLowerCase()) {
+        cell.className = 'cell correct';
+      } else {
+        cell.className = 'cell wrong';
+      }
+    }
+  });
+  updateScore();
+}
+
+function checkAll() {
+  document.querySelectorAll('.cell input').forEach(input => {
+    const val = input.value.trim();
+    const cell = input.closest('.cell');
+    if (val === '') {
+      cell.className = 'cell';
+    } else if (val.toLowerCase() === input.getAttribute('data-sym').toLowerCase()) {
+      cell.className = 'cell correct';
+    } else {
+      cell.className = 'cell wrong';
+    }
+  });
+  updateScore();
+}
 
 function updateScore() {
   const correct = document.querySelectorAll('.cell.correct').length;
