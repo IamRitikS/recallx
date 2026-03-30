@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chapter-wise MCQs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <link rel="stylesheet" href="../styles.css">
+
+  <script src="assets/mcq-data.js"></script>
+
+  <style>
+    body {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .chapter-bar {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    select {
+      padding: 9px 14px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: Arial, sans-serif;
+      cursor: pointer;
+      background: #fff;
+      max-width: 100%;
+      width: 360px;
+    }
+
+    .score {
+      text-align: center;
+      font-size: 15px;
+      color: #555;
+      min-height: 20px;
+      margin-bottom: 10px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      position: sticky;
+      top: 0;
+      background: #fafafa;
+      padding: 8px 0;
+      z-index: 10;
+    }
+
+    button.active {
+      background-color: #a5d6a7;
+    }
+
+    /* ── Questions ─────────────────────────────────── */
+    .questions {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .placeholder {
+      text-align: center;
+      color: #aaa;
+      font-size: 15px;
+      padding: 48px 0;
+    }
+
+    .question-card {
+      background: #fff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .question-text {
+      font-size: 15px;
+      font-weight: bold;
+      line-height: 1.5;
+      margin-bottom: 10px;
+    }
+
+    .q-num {
+      color: #999;
+      font-weight: normal;
+      margin-right: 4px;
+    }
+
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .option {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 7px;
+      border: 1px solid #e0e0e0;
+      background: #fafafa;
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1.5;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .option:hover {
+      background: #f0f0f0;
+    }
+
+    .opt-letter {
+      font-weight: bold;
+      min-width: 18px;
+      color: #777;
+      flex-shrink: 0;
+    }
+
+    /* States */
+    .option.selected {
+      border-color: #90caf9;
+      background: #e3f2fd;
+    }
+
+    .option.correct {
+      border-color: #81c784;
+      background: #c8e6c9;
+      color: #1b5e20;
+    }
+
+    .option.correct .opt-letter { color: #1b5e20; }
+
+    .option.wrong {
+      border-color: #e57373;
+      background: #ffcdd2;
+      color: #b71c1c;
+    }
+
+    .option.wrong .opt-letter { color: #b71c1c; }
+
+    .option.revealed {
+      border-color: #81c784;
+      background: #c8e6c9;
+      color: #1b5e20;
+    }
+
+    .option.revealed .opt-letter { color: #1b5e20; }
+  </style>
+</head>
+<body>
+
+<h1>Chapter-wise MCQs</h1>
+
+<div class="chapter-bar">
+  <select id="chapterSelect" onchange="loadChapter(this.value)">
+    <option value="">— Select a chapter —</option>
+  </select>
+</div>
+
+<div class="score" id="score"></div>
+
+<div class="controls">
+  <button id="hintsBtn" onclick="toggleHints()">Hints: OFF</button>
+  <button onclick="checkAll()">Check</button>
+  <button onclick="resetAll()">Reset</button>
+  <button onclick="revealAll()">Reveal All</button>
+  <button onclick="window.location.href='index.html'">Back</button>
+</div>
+
+<div class="questions" id="questions">
+  <p class="placeholder">Select a chapter above to begin.</p>
+</div>
+
+<script>
+/* ── Chapter registry (data loaded from assets/mcq-data.js) ── */
+
+const LETTERS = ['A', 'B', 'C', 'D'];
+
+/* ── State ───────────────────────────────────────── */
+let questions    = [];
+let userAnswers  = {};   // { qIndex: 'A'|'B'|'C'|'D' }
+let hintsEnabled = false;
+
+/* ── Elements ────────────────────────────────────── */
+const selectEl    = document.getElementById('chapterSelect');
+const scoreEl     = document.getElementById('score');
+const containerEl = document.getElementById('questions');
+const hintsBtnEl  = document.getElementById('hintsBtn');
+
+/* ── Populate dropdown ───────────────────────────── */
+MCQ_DATA.forEach((ch, idx) => {
+  const opt = document.createElement('option');
+  opt.value = idx;
+  opt.textContent = ch.name;
+  selectEl.appendChild(opt);
+});
+
+/* ── Load chapter ────────────────────────────────── */
+function loadChapter(idx) {
+  questions   = [];
+  userAnswers = {};
+  hintsEnabled = false;
+  hintsBtnEl.textContent = 'Hints: OFF';
+  hintsBtnEl.classList.remove('active');
+  scoreEl.textContent = '';
+
+  if (idx === '') {
+    containerEl.innerHTML = '<p class="placeholder">Select a chapter above to begin.</p>';
+    return;
+  }
+
+  const chapter = MCQ_DATA[parseInt(idx)];
+  questions = Array.isArray(chapter.questions) ? chapter.questions : [];
+  renderQuestions();
+  window.scrollTo(0, 0);
+}
+
+/* ── Render all questions ────────────────────────── */
+function renderQuestions() {
+  containerEl.innerHTML = '';
+
+  if (questions.length === 0) {
+    containerEl.innerHTML = '<p class="placeholder">No questions available for this chapter yet.</p>';
+    updateScore();
+    return;
+  }
+
+  questions.forEach((q, i) => {
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = 'q-' + i;
+
+    const qText = document.createElement('div');
+    qText.className = 'question-text';
+    qText.innerHTML = '<span class="q-num">Q' + (i + 1) + '.</span> ' + escHtml(q.question);
+    card.appendChild(qText);
+
+    const optsDiv = document.createElement('div');
+    optsDiv.className = 'options';
+
+    LETTERS.forEach((letter, j) => {
+      const optEl = document.createElement('div');
+      optEl.className = 'option';
+      optEl.id = 'q-' + i + '-' + letter;
+      optEl.innerHTML =
+        '<span class="opt-letter">' + letter + '.</span> ' +
+        escHtml(stripPrefix(q.options[j] || ''));
+      optEl.addEventListener('click', () => selectOption(i, letter));
+      optsDiv.appendChild(optEl);
+    });
+
+    card.appendChild(optsDiv);
+    containerEl.appendChild(card);
+  });
+
+  updateScore();
+}
+
+/* ── Select an option ────────────────────────────── */
+function selectOption(qIndex, letter) {
+  userAnswers[qIndex] = letter;
+
+  if (hintsEnabled) {
+    paintQuestion(qIndex, 'feedback');
+  } else {
+    paintQuestion(qIndex, 'selected');
+  }
+
+  updateScore();
+}
+
+/* ── Paint one question's options ────────────────── */
+/*  mode: 'selected' | 'feedback' | 'reset' | 'reveal' */
+function paintQuestion(qIndex, mode) {
+  const q        = questions[qIndex];
+  const selected = userAnswers[qIndex];
+
+  LETTERS.forEach(letter => {
+    const el = document.getElementById('q-' + qIndex + '-' + letter);
+    if (!el) return;
+    el.className = 'option';
+
+    if (mode === 'reset')   return;
+
+    if (mode === 'reveal') {
+      if (letter === q.answer) el.classList.add('revealed');
+      return;
+    }
+
+    if (mode === 'selected') {
+      if (letter === selected) el.classList.add('selected');
+      return;
+    }
+
+    // mode === 'feedback'
+    if (letter === selected) {
+      el.classList.add(selected === q.answer ? 'correct' : 'wrong');
+    }
+  });
+}
+
+/* ── Score ───────────────────────────────────────── */
+function updateScore() {
+  if (questions.length === 0) { scoreEl.textContent = ''; return; }
+  let correct  = 0;
+  let answered = 0;
+  questions.forEach((q, i) => {
+    if (userAnswers[i] !== undefined) {
+      answered++;
+      if (userAnswers[i] === q.answer) correct++;
+    }
+  });
+  scoreEl.textContent =
+    correct + ' / ' + questions.length + ' correct' +
+    '  (' + answered + ' answered)';
+}
+
+/* ── Controls ────────────────────────────────────── */
+function toggleHints() {
+  hintsEnabled = !hintsEnabled;
+  hintsBtnEl.textContent = 'Hints: ' + (hintsEnabled ? 'ON' : 'OFF');
+  hintsBtnEl.classList.toggle('active', hintsEnabled);
+
+  questions.forEach((_, i) => {
+    if (userAnswers[i] !== undefined) {
+      paintQuestion(i, hintsEnabled ? 'feedback' : 'selected');
+    }
+  });
+
+  updateScore();
+}
+
+function checkAll() {
+  questions.forEach((_, i) => {
+    if (userAnswers[i] !== undefined) paintQuestion(i, 'feedback');
+  });
+  updateScore();
+}
+
+function resetAll() {
+  userAnswers = {};
+  questions.forEach((_, i) => paintQuestion(i, 'reset'));
+  updateScore();
+}
+
+function revealAll() {
+  questions.forEach((q, i) => {
+    userAnswers[i] = q.answer;
+    paintQuestion(i, 'reveal');
+  });
+  updateScore();
+}
+
+/* ── Utility ─────────────────────────────────────── */
+function stripPrefix(str) {
+  return str.replace(/^[A-D][).\s]+/, '');
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+</script>
+
+</body>
+</html>
